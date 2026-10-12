@@ -64,6 +64,12 @@ They were written **from the specification alone** ([`Tests/SPEC.md`](Tests/SPEC
 
 CI runs `swift test` before every build; no `.dmg` if a test fails.
 
+### App icon
+
+```bash
+swift scripts/make-icon.swift   # regenerates Resources/AppIcon.icns
+```
+
 ### Tutorial GIF
 
 ```bash

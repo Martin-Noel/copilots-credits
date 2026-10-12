@@ -18,6 +18,7 @@ swift test                     # what CI runs (works with full Xcode)
 ./build.sh dmg                 # + build/CopilotCredits.dmg
 UNIVERSAL=1 VERSION=0.2.0 BUILD_NUMBER=42 ./build.sh dmg   # same as CI
 
+swift scripts/make-icon.swift  # regenerates Resources/AppIcon.icns (drawn in SwiftUI, copied into the .app by build.sh)
 ./scripts/make-tutorial.sh     # docs/tutorial.gif + build/tutorial/tutorial.mp4 (needs ffmpeg; `fr` arg for French UI)
 ```
 

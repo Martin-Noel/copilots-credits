@@ -29,6 +29,7 @@ rm -rf "$APP"
 mkdir -p "$APP/Contents/MacOS" "$APP/Contents/Resources"
 cp "$BIN_DIR/$EXEC" "$APP/Contents/MacOS/$EXEC"
 cp Resources/Info.plist "$APP/Contents/Info.plist"
+cp Resources/AppIcon.icns "$APP/Contents/Resources/AppIcon.icns"
 
 PLIST="$APP/Contents/Info.plist"
 if [[ -n "${VERSION:-}" ]]; then
