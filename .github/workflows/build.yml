@@ -1,0 +1,70 @@
+# Builds the app on a macOS runner and produces the .dmg.
+# - push to main / PR / manual run -> .dmg in the Actions tab (artifact)
+# - tag v* (e.g. v0.2.0)            -> public GitHub Release with the .dmg
+#
+# The file name stays CopilotCredits.dmg for every version, so this link
+# always points to the latest one: /releases/latest/download/CopilotCredits.dmg
+name: Build
+
+on:
+  push:
+    branches: [main]
+    tags: ["v*"]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: write # needed to create the Release
+
+jobs:
+  build:
+    runs-on: macos-15 # Xcode 16
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Versions
+        run: swift --version && sw_vers
+
+      # No .dmg if a test fails.
+      - name: Tests
+        run: swift test
+
+      # The git tag is the single source of truth for the version: v0.2.0 -> 0.2.0
+      - name: Version
+        id: version
+        run: |
+          if [[ "$GITHUB_REF" == refs/tags/v* ]]; then
+            echo "value=${GITHUB_REF_NAME#v}" >> "$GITHUB_OUTPUT"
+          else
+            echo "value=0.0.0-dev+${GITHUB_SHA::7}" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Build .app + .dmg (universel)
+        env:
+          VERSION: ${{ steps.version.outputs.value }}
+          BUILD_NUMBER: ${{ github.run_number }}
+          UNIVERSAL: "1"
+        run: bash build.sh dmg
+
+      - name: Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: CopilotCredits-${{ steps.version.outputs.value }}
+          path: build/CopilotCredits.dmg
+          retention-days: 30
+
+      - name: Release
+        if: startsWith(github.ref, 'refs/tags/v')
+        uses: softprops/action-gh-release@v2
+        with:
+          files: build/CopilotCredits.dmg
+          generate_release_notes: true
+          body: |
+            ### Installation
+            1. Download `CopilotCredits.dmg`, open it and drag the app into **Applications**.
+            2. The app is not notarized by Apple. On first launch:
+               ```bash
+               xattr -dr com.apple.quarantine "/Applications/Copilot Credits.app"
+               ```
+               or *System Settings → Privacy & Security → Open Anyway*.
+            3. Click the icon in the menu bar → **Sign in to GitHub**.
